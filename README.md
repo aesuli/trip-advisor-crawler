@@ -23,14 +23,19 @@ It is aimed at researchers and students that want to experiment with text mining
 
 ## optional arguments:
 
-  -h, --help            show this help message and exit
+  -h, --help            show help message and exit
+
   -f, --force           Force download even if already successfully downloaded
+
   -r MAXRETRIES, --maxretries MAXRETRIES
                         Max retries to download a file. Default: 3
+
   -t TIMEOUT, --timeout TIMEOUT
                         Timeout in seconds for http connections. Default: 180
+
   -p PAUSE, --pause PAUSE
                         Seconds to wait between http requests. Default: 0.2
+
   -m MAXREVIEWS, --maxreviews MAXREVIEWS
                         Maximum number of reviews per item to download.
                         Default:unlimited
