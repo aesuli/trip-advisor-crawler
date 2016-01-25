@@ -137,10 +137,10 @@ def getreview(domain, cityid, hotelid, reviewid, timeout, maxretries, basepath, 
 def main():
     # sys.stdout = codecs.getwriter('utf8')(sys.stdout.buffer)
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        description='''ID format:
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            description='''ID format:
     domain:locationcode
-    e.g. com:187893 Tuscany from the com domain
+    e.g. com:187768 reviews of hotels in Italy from the com domain
     domain:locationcode:citycode
     e.g. jp:187899:187899 city of Pisa from the jp domain
     domain:locationcode:citycode:hotelcode
@@ -150,24 +150,27 @@ def main():
     parser.add_argument('-f', '--force', help='Force download even if already successfully downloaded', required=False,
                         action='store_true')
     parser.add_argument(
-        '-r', '--maxretries', help='Max retries to download a file. Default: 3',
-        required=False, type=int, default=3)
+            '-r', '--maxretries', help='Max retries to download a file. Default: 3',
+            required=False, type=int, default=3)
     parser.add_argument(
-        '-t', '--timeout', help='Timeout in seconds for http connections. Default: 180',
-        required=False, type=int, default=180)
+            '-t', '--timeout', help='Timeout in seconds for http connections. Default: 180',
+            required=False, type=int, default=180)
     parser.add_argument(
-        '-p', '--pause', help='Seconds to wait between http requests. Default: 0.2', required=False, default=0.2,
-        type=float)
+            '-p', '--pause', help='Seconds to wait between http requests. Default: 0.2', required=False, default=0.2,
+            type=float)
     parser.add_argument(
-        '-m', '--maxreviews', help='Maximum number of reviews per item to download. Default:unlimited', required=False,
-        type=int, default=-1)
+            '-m', '--maxreviews', help='Maximum number of reviews per item to download. Default:unlimited',
+            required=False,
+            type=int, default=-1)
     parser.add_argument(
-        '-o', '--out', help='Output base path', required=True)
+            '-o', '--out', help='Output base path', required=True)
     parser.add_argument('ids', metavar='ID', nargs='+',
                         help='IDs for which to download reviews')
     args = parser.parse_args()
 
     basepath = args.out
+    if not os.path.exists(basepath):
+        os.makedirs(basepath)
 
     with open(os.path.join(args.out, 'ids.txt'), 'w') as file:
         for id in args.ids:
@@ -190,6 +193,7 @@ def main():
                 for reviewid in sorted(reviewids):
                     print('downloading: ', ':'.join((domain, locationid, hotellocationid, hotelid, reviewid)))
                     file.write(':'.join((domain, locationid, hotellocationid, hotelid, reviewid)))
+                    file.write('\n')
                     getreview(domain, hotellocationid, hotelid, reviewid, args.timeout, args.maxretries, basepath,
                               args.force,
                               args.pause)
