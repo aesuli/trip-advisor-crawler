@@ -36,7 +36,7 @@ def cleanhtml(htmltext):
     return cleantext
 
 
-summaryre = re.compile(r'innerBubble(.*?)reportTxt', re.M | re.S)
+summaryre = re.compile(r'innerBubble(.*?)reportProblem', re.M | re.S)
 overallratingre = re.compile(r'class="sprite-rating_s_fill rating_s_fill s([0-9])0\"')
 reviewtextre = re.compile(r'<div class="entry">(.*?)</div>', re.M | re.S)
 aspectre = re.compile(r'recommend-answer(.*?)</li>', re.M | re.S)
