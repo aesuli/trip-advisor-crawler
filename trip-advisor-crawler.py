@@ -142,10 +142,10 @@ def main():
     domain:locationcode
     e.g. com:187768 reviews of hotels in Italy from the com domain
     domain:locationcode:citycode
-    e.g. jp:187899:187899 city of Pisa from the jp domain
-    domain:locationcode:citycode:hotelcode
+    e.g. jp:187899 city of Pisa from the jp domain
+    domain:locationcode:hotellocationcode:hotelcode
     e.g. it:187899:187899:662603 all reviews for a specific hotel from the it domain
-    domain:locationcode:citycode:hotelcode:reviewcode
+    domain:locationcode:hotellocationcode:hotelcode:reviewcode
     e.g. it:187899:187899:662603:322965103 a specific review''')
     parser.add_argument('-f', '--force', help='Force download even if already successfully downloaded', required=False,
                         action='store_true')
@@ -178,7 +178,7 @@ def main():
             fields = id.split(':')
             domain = fields[0]
             locationid = fields[1]
-            if len(fields) >= 2:
+            if len(fields) == 2:
                 hotelids = gethotelids(domain, locationid, args.timeout, args.maxretries, args.pause)
             elif len(fields) >= 4:
                 hotelids = [(fields[2], fields[3])]
