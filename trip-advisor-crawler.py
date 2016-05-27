@@ -20,8 +20,14 @@ import os
 import re
 import sys
 import codecs
-import urllib
-import urllib.request
+
+if sys.version_info[0] >= 3:
+    import urllib
+    import urllib.request as request
+    import urllib.error as urlerror
+else:
+    import urllib2 as request
+    import urllib2 as urlerror
 import socket
 from contextlib import closing
 from time import sleep
@@ -32,20 +38,20 @@ def download_page(url, maxretries, timeout, pause):
     htmlpage = None
     while tries < maxretries and htmlpage is None:
         try:
-            with closing(urllib.request.urlopen(url, timeout=timeout)) as f:
+            with closing(request.urlopen(url, timeout=timeout)) as f:
                 htmlpage = f.read()
                 sleep(pause)
-        except (urllib.error.URLError, socket.timeout, socket.error):
+        except (urlerror.URLError, socket.timeout, socket.error):
             tries += 1
     return htmlpage
 
 
-def gethotelids(domain, locationid, timeout, maxretries, pause):
-    baseurl = 'http://www.tripadvisor.' + domain + '/Hotels-g'
+def getactivityids(domain, activitytype, locationid, timeout, maxretries, pause):
+    baseurl = 'http://www.tripadvisor.' + domain + '/'+activitytype+'s-g'
     oastep = 30
-    hotelids = set()
+    activityids = set()
     citypage = 0
-    hotelre = re.compile(r'/Hotel_Review-g([0-9]+)-d([0-9]+)-Reviews')
+    activityre = re.compile(r'/'+activitytype+'_Review-g([0-9]+)-d([0-9]+)-Reviews')
 
     while True:
         if citypage == 0:
@@ -59,42 +65,42 @@ def gethotelids(domain, locationid, timeout, maxretries, pause):
             print('Error downloading the city URL: ' + cityurl)
             break
         else:
-            pageids = set(hotelre.findall(htmlpage.decode()))
+            pageids = set(activityre.findall(htmlpage.decode('utf-8')))
             allin = True
-            for id in pageids:
-                if not id in hotelids:
+            for id_ in pageids:
+                if not id_ in activityids:
                     allin = False
                     break
             if allin:
                 break
-            hotelids.update(pageids)
+            activityids.update(pageids)
             citypage += 1
 
-    return hotelids
+    return activityids
 
 
-def getreviewids(domain, cityid, hotelid, timeout, maxretries, maxreviews, pause):
-    baseurl = 'http://www.tripadvisor.' + domain + '/Hotel_Review-g'
+def getreviewids(domain, activitytype, cityid, activityid, timeout, maxretries, maxreviews, pause):
+    baseurl = 'http://www.tripadvisor.' + domain + '/'+activitytype+'_Review-g'
     orstep = 10
     reviewids = set()
-    hotelpage = 0
-    reviewre = re.compile(r'/ShowUserReviews-g%s-d%s-r([0-9]+)-' % (cityid, hotelid))
+    activitypage = 0
+    reviewre = re.compile(r'/ShowUserReviews-g%s-d%s-r([0-9]+)-' % (cityid, activityid))
 
     while True:
         if maxreviews > 0 and len(reviewids) >= maxreviews:
             break
-        if hotelpage == 0:
-            hotelurl = '%s%s-d%s' % (baseurl, cityid, hotelid)
+        if activitypage == 0:
+            activitiyurl = '%s%s-d%s' % (baseurl, cityid, activityid)
         else:
-            hotelurl = '%s%s-d%s-or%s' % (baseurl, cityid, hotelid, hotelpage * orstep)
+            activitiyurl = '%s%s-d%s-or%s' % (baseurl, cityid, activityid, activitypage * orstep)
 
-        htmlpage = download_page(hotelurl, maxretries, timeout, pause)
+        htmlpage = download_page(activitiyurl, maxretries, timeout, pause)
 
         if htmlpage is None:
-            print('Error downloading the hotel URL: ' + hotelurl)
+            print('Error downloading the URL: ' + activitiyurl)
             break
         else:
-            pageids = set(reviewre.findall(htmlpage.decode()))
+            pageids = set(reviewre.findall(htmlpage.decode('utf-8')))
             allin = True
             for id in pageids:
                 if not id in reviewids:
@@ -110,16 +116,16 @@ def getreviewids(domain, cityid, hotelid, timeout, maxretries, maxreviews, pause
                 pageids = set(pageids)
 
             reviewids.update(pageids)
-            hotelpage += 1
+            activitypage += 1
 
     return reviewids
 
 
-def getreview(domain, cityid, hotelid, reviewid, timeout, maxretries, basepath, force, pause):
+def getreview(domain, cityid, activity, reviewid, timeout, maxretries, basepath, force, pause):
     baseurl = 'http://www.tripadvisor.' + domain + '/ShowUserReviews-g'
-    reviewurl = '%s%s-d%s-r%s' % (baseurl, cityid, hotelid, reviewid)
+    reviewurl = '%s%s-d%s-r%s' % (baseurl, cityid, activity, reviewid)
 
-    path = os.sep.join((basepath, domain, str(cityid), str(hotelid)))
+    path = os.sep.join((basepath, domain, str(cityid), str(activity)))
     filename = os.sep.join((path, str(reviewid) + '.html'))
     if force or not os.path.exists(filename):
         htmlpage = download_page(reviewurl, maxretries, timeout, pause)
@@ -130,9 +136,11 @@ def getreview(domain, cityid, hotelid, reviewid, timeout, maxretries, basepath, 
             if not os.path.exists(path):
                 os.makedirs(path)
 
-            with open(filename, mode='w', encoding='utf8') as file:
-                file.write(htmlpage.decode())
+            with codecs.open(filename, mode='w', encoding='utf8') as file:
+                file.write(htmlpage.decode('utf-8'))
 
+
+activities = ['Hotel','Restaurant']
 
 def main():
     # sys.stdout = codecs.getwriter('utf8')(sys.stdout.buffer)
@@ -142,13 +150,15 @@ def main():
     domain:locationcode
     e.g. com:187768 reviews of hotels in Italy from the com domain
     domain:locationcode:citycode
-    e.g. jp:187899 city of Pisa from the jp domain
-    domain:locationcode:hotellocationcode:hotelcode
+    e.g. jp:187899:187899 city of Pisa from the jp domain
+    domain:locationcode:citycode:hotelcode
     e.g. it:187899:187899:662603 all reviews for a specific hotel from the it domain
-    domain:locationcode:hotellocationcode:hotelcode:reviewcode
+    domain:locationcode:citycode:hotelcode:reviewcode
     e.g. it:187899:187899:662603:322965103 a specific review''')
     parser.add_argument('-f', '--force', help='Force download even if already successfully downloaded', required=False,
                         action='store_true')
+    parser.add_argument('-a', '--activity', help='Type of activity to crawl (default: %s)' % activities[0], choices=activities,
+                        default=activities[0])
     parser.add_argument(
             '-r', '--maxretries', help='Max retries to download a file. Default: 3',
             required=False, type=int, default=3)
@@ -179,22 +189,22 @@ def main():
             domain = fields[0]
             locationid = fields[1]
             if len(fields) == 2:
-                hotelids = gethotelids(domain, locationid, args.timeout, args.maxretries, args.pause)
+                activityids = getactivityids(domain, args.activity, locationid, args.timeout, args.maxretries, args.pause)
             elif len(fields) >= 4:
-                hotelids = [(fields[2], fields[3])]
-            for hotellocationid, hotelid in sorted(hotelids):
-                print('crawling: ', ':'.join((domain, locationid, hotellocationid, hotelid)))
+                activityids = [(fields[2], fields[3])]
+            for activitylocationid, activityid in sorted(activityids):
+                print('crawling: ', ':'.join((domain, locationid, activitylocationid, activityid)))
                 if len(fields) == 5:
                     reviewids = [fields[4]]
                 else:
-                    reviewids = getreviewids(domain, hotellocationid, hotelid, args.timeout, args.maxretries,
+                    reviewids = getreviewids(domain, args.activity, activitylocationid, activityid, args.timeout, args.maxretries,
                                              args.maxreviews,
                                              args.pause)
                 for reviewid in sorted(reviewids):
-                    print('downloading: ', ':'.join((domain, locationid, hotellocationid, hotelid, reviewid)))
-                    file.write(':'.join((domain, locationid, hotellocationid, hotelid, reviewid)))
+                    print('downloading: ', ':'.join((domain, locationid, activitylocationid, activityid, reviewid)))
+                    file.write(':'.join((domain, locationid, activitylocationid, activityid, reviewid)))
                     file.write('\n')
-                    getreview(domain, hotellocationid, hotelid, reviewid, args.timeout, args.maxretries, basepath,
+                    getreview(domain, activitylocationid, activityid, reviewid, args.timeout, args.maxretries, basepath,
                               args.force,
                               args.pause)
 
