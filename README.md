@@ -6,6 +6,7 @@ It is aimed at researchers and students that want to experiment with text mining
 
 
 **usage:** trip-advisor-crawler.py [-h] [-f] [-r MAXRETRIES] [-t TIMEOUT]
+                               [-a {Hotel,Restaurant}]
                                [-p PAUSE] [-m MAXREVIEWS] -o OUT
                                ID [ID ...]
 
@@ -26,6 +27,9 @@ It is aimed at researchers and students that want to experiment with text mining
   -h, --help            show help message and exit
 
   -f, --force           Force download even if already successfully downloaded
+
+  -a {Hotel,Restaurant}, --activity {Hotel,Restaurant}
+                        Type of activity to crawl (default: Hotel)
 
   -r MAXRETRIES, --maxretries MAXRETRIES
                         Max retries to download a file. Default: 3
