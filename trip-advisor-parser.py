@@ -51,7 +51,9 @@ aspectratingre = re.compile(r'bubble_([0-9])')
 # old format
 # aspectnamere = re.compile(r'span>(.*)$', re.M | re.S)
 aspectnamere = re.compile(r'recommend-description">(.*)</div$', re.M | re.S)
-hotelnamere = re.compile(r'warLocName">(.*)?</div>')
+# old format
+# hotelnamere = re.compile(r'warLocName">(.*)?</div>')
+hotelnamere = re.compile(r'title: "(.*)?"')
 idre = re.compile(r'id="review_([0-9]+)"')
 
 
@@ -81,7 +83,7 @@ def main():
             with codecs.open(filepath, mode='r', encoding='utf8') as file:
                 htmlpage = file.read()
             print(filepath)
-            hotelname = hotelnamere.findall(htmlpage)[0]
+            hotelname = hotelnamere.findall(htmlpage)[0].strip()
             for block in summaryre.findall(htmlpage):
                 id_ = idre.findall(block)[0]
                 if id_ in reviews:
