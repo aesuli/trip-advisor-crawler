@@ -40,11 +40,17 @@ def cleanhtml(htmltext):
 
 
 summaryre = re.compile(r'innerBubble(.*?)reportProblem', re.M | re.S)
-overallratingre = re.compile(r'class="sprite-rating_s_fill rating_s_fill s([0-9])0\"')
+# old format
+# overallratingre = re.compile(r'class="sprite-rating_s_fill rating_s_fill s([0-9])0\"')
+overallratingre = re.compile(r'reviewItemInline.*?bubble_([0-9])', re.M | re.S)
 reviewtextre = re.compile(r'<div class="entry">(.*?)</div>', re.M | re.S)
 aspectre = re.compile(r'recommend-answer(.*?)</li>', re.M | re.S)
-aspectratingre = re.compile(r'sprite-rating_ss_fill rating_ss_fill ss([0-9])0')
-aspectnamere = re.compile(r'span>(.*)$', re.M | re.S)
+# old format
+# aspectratingre = re.compile(r'sprite-rating_ss_fill rating_ss_fill ss([0-9])0')
+aspectratingre = re.compile(r'bubble_([0-9])')
+# old format
+# aspectnamere = re.compile(r'span>(.*)$', re.M | re.S)
+aspectnamere = re.compile(r'recommend-description">(.*)</div$', re.M | re.S)
 hotelnamere = re.compile(r'warLocName">(.*)?</div>')
 idre = re.compile(r'id="review_([0-9]+)"')
 
