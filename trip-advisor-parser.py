@@ -53,6 +53,7 @@ aspectratingre = re.compile(r'bubble_([0-9])')
 aspectnamere = re.compile(r'recommend-description">(.*)</div$', re.M | re.S)
 # old format, sometimes still used
 oldhotelnamere = re.compile(r'warLocName">(.*)?</div>')
+althotelnamere = re.compile(r'"description" content="(.*)?:')
 hotelnamere = re.compile(r'title: "(.*)?"')
 idre = re.compile(r'id="review_([0-9]+)"')
 
@@ -86,7 +87,10 @@ def main():
             try:
                 hotelname = hotelnamere.findall(htmlpage)[0].strip()
             except IndexError:
-                hotelname = oldhotelnamere.findall(htmlpage)[0].strip()
+                try:
+                    hotelname = oldhotelnamere.findall(htmlpage)[0].strip()
+                except IndexError:
+                    hotelname = althotelnamere.findall(htmlpage)[0].strip()
             for block in summaryre.findall(htmlpage):
                 id_ = idre.findall(block)[0]
                 if id_ in reviews:
