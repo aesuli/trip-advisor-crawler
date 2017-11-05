@@ -92,7 +92,10 @@ def main():
                 except IndexError:
                     hotelname = althotelnamere.findall(htmlpage)[0].strip()
             for block in summaryre.findall(htmlpage):
-                id_ = idre.findall(block)[0]
+                try:
+                    id_ = idre.findall(block)[0]
+                except:
+                    continue
                 if id_ in reviews:
                     continue
                 reviews.add(id_)
