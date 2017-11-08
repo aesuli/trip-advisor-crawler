@@ -16,15 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import codecs
 import csv
 import fnmatch
+import html
 import os
 import re
-import sys
-import codecs
-
-if sys.version_info[0] >= 3:
-    import html
 
 
 def get_review_filesnames(input_dir):
@@ -68,7 +65,6 @@ def get_aspect_ratings(block):
 
 
 def main():
-    # sys.stdout = codecs.getwriter('utf8')(sys.stdout.buffer)
     parser = argparse.ArgumentParser(
         description='TripAdvisor Hotel parser')
     parser.add_argument('-d', '--dir', help='Directory with the data for parsing', required=True)
@@ -92,7 +88,10 @@ def main():
                 except IndexError:
                     hotelname = althotelnamere.findall(htmlpage)[0].strip()
             for block in summaryre.findall(htmlpage):
-                id_ = idre.findall(block)[0]
+                try:
+                    id_ = idre.findall(block)[0]
+                except IndexError:
+                    continue
                 if id_ in reviews:
                     continue
                 reviews.add(id_)
@@ -103,17 +102,11 @@ def main():
                 else:
                     binaryrating = 'negative'
                 reviewtext = cleanhtml(reviewtext).strip()
-                if sys.version_info[0] >= 3:
-                    try:
-                        reviewtext = html.unescape(reviewtext)
-                    except Exception:
-                        pass
-                    review = [id_, filepath, hotelname, reviewtext, overallrating, binaryrating]
-                else:
-                    review = [id_, filepath,
-                                    unicode.encode(hotelname, encoding='ascii', errors='ignore'),
-                                    unicode.encode(reviewtext, encoding='ascii', errors='ignore'), overallrating,
-                                    binaryrating]
+                try:
+                    reviewtext = html.unescape(reviewtext)
+                except Exception:
+                    pass
+                review = [id_, filepath, hotelname, reviewtext, overallrating, binaryrating]
                 writer.writerow(review)
 
 

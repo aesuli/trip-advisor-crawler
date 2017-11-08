@@ -18,16 +18,10 @@
 import argparse
 import os
 import re
-import sys
 import codecs
 
-if sys.version_info[0] >= 3:
-    import urllib
-    import urllib.request as request
-    import urllib.error as urlerror
-else:
-    import urllib2 as request
-    import urllib2 as urlerror
+import urllib.request as request
+import urllib.error as urlerror
 import socket
 from contextlib import closing
 from time import sleep
@@ -143,7 +137,6 @@ def getreview(domain, cityid, activity, reviewid, timeout, maxretries, basepath,
 activities = ['Hotel','Restaurant']
 
 def main():
-    # sys.stdout = codecs.getwriter('utf8')(sys.stdout.buffer)
     parser = argparse.ArgumentParser(
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description='''ID format:
