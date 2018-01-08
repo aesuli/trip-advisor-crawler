@@ -36,7 +36,7 @@ def cleanhtml(htmltext):
     return cleantext
 
 
-summaryre = re.compile(r'innerBubble(.*?)reportProblem', re.M | re.S)
+summaryre = re.compile(r'innerBubble(.*?)ReportIAP', re.M | re.S)
 # old format
 # overallratingre = re.compile(r'class="sprite-rating_s_fill rating_s_fill s([0-9])0\"')
 overallratingre = re.compile(r'reviewItemInline.*?bubble_([0-9])', re.M | re.S)
@@ -52,7 +52,7 @@ aspectnamere = re.compile(r'recommend-description">(.*)</div$', re.M | re.S)
 oldhotelnamere = re.compile(r'warLocName">(.*)?</div>')
 althotelnamere = re.compile(r'"description" content="(.*)?:')
 hotelnamere = re.compile(r'title: "(.*)?"')
-idre = re.compile(r'id="review_([0-9]+)"')
+idre = re.compile(r'id="rn([0-9]+)"')
 
 
 def get_aspect_ratings(block):
